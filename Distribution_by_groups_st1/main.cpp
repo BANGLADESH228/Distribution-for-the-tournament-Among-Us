@@ -73,12 +73,30 @@ public:
        return static_cast<double>(total) / scores.size();
     }
 
+    std::string get_name(std::string name)
+    {
+        return name;
+    }
+
+//    std::string get_results(std::vector<int> scores)
+//    {
+//        return scores;
+//    }
+
     ~Player(){};
+
+    friend std::ostream& operator<<(std::ostream& os, const Player& pl);
 
 private:
     std::string name;
     std::vector<int> scores;
 };
+
+std::ostream& operator<<(std::ostream& os, const Player& pl)
+{
+    os << pl.name << ' ' << pl.scores << std::endl;
+    return os;
+}
 
 int main()
 {
@@ -94,7 +112,7 @@ int main()
         "Alesha",   "Vasiliy", "Dima",      "Ruslan",   "Oleg",  "Mikhail",   "Igor",   "Ivan",     "Gleb",     "Denis",
         "Alina",    "Alisa",   "Anastasia", "Viktoria", "Darya", "Ekaterina", "Kamila", "Kristina", "Ksenia",   "Natalya",
     };
-    std::string name = names[rand() % 30];
+    std::string name;
 
     std::cout << "Enter a number - the number of participants: ";
     std::cin >> num_of_peoples;
@@ -131,15 +149,21 @@ int main()
     for (int i = 0; i < num_of_peoples; ++i)
     {
         generate_random_numbers(num_of_scores, scores);
+        name = names[rand() % 30];
         Player player(name, scores);
-        for (auto const& sc : scores)
-            std::cout << sc << ' ';
-        auto final_result = player.truncated_mean(scores, new_percentage);
-        std::cout << "Final: " << name << final_result << std::endl;
+        players.push_back(player);
+        std::cout << player;
     }
+
+    std::cout << players[1];
+
+    std::cout << players.size();
 
     //Player player(name, scores);
     //auto final_result = player.truncated_mean(scores, new_percentage);
+
+    for (auto const& pl : players)
+        std::cout << pl << ' ';
 
     //std::cout << std::endl;
     //std::cout << "Final: " << final_result << std::endl;

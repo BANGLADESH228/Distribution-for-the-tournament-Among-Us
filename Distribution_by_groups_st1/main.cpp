@@ -5,15 +5,6 @@
 #include <algorithm>
 #include <iterator>
 
-template<typename T>
-void print_new_vectors(std::vector<T> const &v)
-{
-    for (auto &i: v)
-        std::cout << i << ' ';
-
-    std::cout << std::endl;
-}
-
 void generate_random_numbers(int num, std::vector<int>& vec)
 {
     for (int i = 0; i < num; ++i)
@@ -62,7 +53,7 @@ public:
     void sort_final_vec(std::vector<Player> players_ready)
     {
         std::sort(players_ready.begin(), players_ready.end(),
-                  [](Player const &a, Player const &b) { return a.final_result < b.final_result; });
+                  [](Player const &a, Player const &b) { return a.final_result > b.final_result; });
     }
 
     std::string get_name(std::string name)
@@ -83,6 +74,7 @@ public:
 private:
     std::string name;
     std::vector<int> scores;
+    std::vector<Player> players_ready;
     double final_result;
 };
 
@@ -91,6 +83,10 @@ std::ostream& operator<<(std::ostream& os, const Player& pl)
     os << pl.name << ' ';
     return os;
 }
+
+//bool operator <(const Player& rhs) {
+//    return age < rhs.age;
+//}
 
 //template <class T>
 //std::ostream & operator << (std::ostream& os, const std::vector<T>& v)
@@ -104,6 +100,15 @@ std::ostream& operator<<(std::ostream& os, const Player& pl)
 
 //    return os;
 //}
+
+template<typename T>
+void print_new_vectors(std::vector<T> const &v)
+{
+    for (auto &i: v)
+        std::cout << i << ' ';
+
+    std::cout << std::endl;
+}
 
 void split_original_and_print_vec(int num_of_groups,
                         int num_of_team_members, std::vector<Player>& results)
@@ -131,36 +136,29 @@ int main()
     int num_of_peoples = 0, num_of_groups = 0,
             num_of_team_members = 0, num_of_scores = 0, percentage = 0;
 
-    std::vector<int> results = {};
-    std::vector<int> scores = {};
-    std::vector<Player> players;
-    std::vector<Player> players_ready;
-
+    std::vector<int> results = {}, scores = {};
+    std::vector<Player> players, players_ready;
+    std::string name;
 
     std::string names[30] = {
         "Anatoliy", "Katya",   "Masha",     "Eva",      "Zema",  "Slavik",    "Margo",  "Yri",      "Vladimir", "Evilina",
         "Alesha",   "Vasiliy", "Dima",      "Ruslan",   "Oleg",  "Mikhail",   "Igor",   "Ivan",     "Gleb",     "Denis",
         "Alina",    "Alisa",   "Anastasia", "Viktoria", "Darya", "Ekaterina", "Kamila", "Kristina", "Ksenia",   "Natalya",
     };
-    std::string name;
 
     std::cout << "Enter a number - the number of participants: ";
     std::cin >> num_of_peoples;
     std::cout << "Enter a number - the number of groups: ";
     std::cin >> num_of_groups;
 
-    num_of_team_members = num_of_peoples / num_of_groups;
-
-    std::cout << std::endl;
-
     std::cout << "Enter a number - the percentage: ";
     std::cin >> percentage;
     std::cout << "Enter a number - the number of scores: ";
     std::cin >> num_of_scores;
 
-    generate_random_numbers(num_of_scores, scores);
+    std::cout << std::endl;
+    num_of_team_members = num_of_peoples / num_of_groups;
     double new_percentage = to_percentage(percentage);
-    std::cout << "Percentage: " << new_percentage << std::endl;
 
     for (int i = 0; i < num_of_peoples; ++i)
     {
@@ -168,7 +166,7 @@ int main()
         name = names[rand() % 30];
         Player player(name, scores);
         players.push_back(player);
-        std::cout << player;
+        std::cout << '#' << i + 1 << ' ' << player;
 
         for (auto const& sc : scores)
             std::cout << sc << ' ';
@@ -176,18 +174,16 @@ int main()
         std::cout << std::endl;
 
         auto final_result = player.truncated_mean(scores, new_percentage);
-
-        std::cout << "Final: " << final_result << std::endl;
+        std::cout << "Final result: " << final_result << std::endl;
 
         Player player_ready(name, final_result);
         players_ready.push_back(player_ready);
+        player_ready.sort_final_vec(players_ready);
 
         scores.clear();
         std::cout << std::endl;
     }
 
-    std::cout << std::endl;
-    //player_ready.sort_final_vec(players_ready);
     split_original_and_print_vec(num_of_groups, num_of_team_members, players_ready);
 
     return 0;

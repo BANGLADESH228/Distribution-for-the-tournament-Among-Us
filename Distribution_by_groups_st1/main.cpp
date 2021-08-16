@@ -1,190 +1,117 @@
-#include <iostream>
-#include <vector>
-#include <string>
+#include "player.h"
 #include <QRandomGenerator64>
 #include <algorithm>
+#include <iostream>
 #include <iterator>
+#include <string>
+#include <vector>
 
-void generate_random_numbers(int num, std::vector<int>& vec)
-{
-    for (int i = 0; i < num; ++i)
-    {
-        std::uniform_int_distribution<int> distribution(0, 10);
-        int rez = distribution(*QRandomGenerator::global());
-        vec.push_back(rez);
-        std::sort(vec.begin(), vec.end());
-    }
+template <typename T1, typename T2>
+void getRandomNumbers(T1 num, std::vector<T2> &vec) {
+  for (int i = 0; i < num; ++i) {
+    std::uniform_int_distribution<int> distribution(0, 10);
+    int rez = distribution(*QRandomGenerator::global());
+    vec.push_back(rez);
+    std::sort(vec.begin(), vec.end());
+  }
 }
 
-double to_percentage(int percentage)
-{
-    return static_cast<double>(percentage / 100.0);
+std::string getRandomName(std::string name) {
+  std::string names[30] = {
+      "Anatoliy", "Katya",     "Masha",    "Eva",      "Zema",      "Slavik",
+      "Margo",    "Yri",       "Vladimir", "Evilina",  "Alesha",    "Vasiliy",
+      "Dima",     "Ruslan",    "Oleg",     "Mikhail",  "Igor",      "Ivan",
+      "Gleb",     "Denis",     "Alina",    "Alisa",    "Anastasia", "Viktoria",
+      "Darya",    "Ekaterina", "Kamila",   "Kristina", "Ksenia",    "Natalya",
+  };
+  name = names[rand() % 30];
+
+  return name;
 }
 
-class Player
-{
-public:
-    Player(){};
-
-    Player(std::string name_, std::vector<int> scores_)
-    {
-       name = name_;
-       scores = scores_;
-    }
-
-    Player(std::string name_, double final_result_)
-    {
-        name = name_;
-        final_result = final_result_;
-    }
-
-    double truncated_mean(std::vector<int> scores, double const percentage)
-    {
-       auto remove_count = static_cast<size_t>(scores.size() * percentage + 0.5);
-       scores.erase(std::begin(scores), std::begin(scores) + remove_count);
-       scores.erase(std::end(scores) - remove_count, std::end(scores));
-
-       auto total = std::accumulate(std::cbegin(scores), std::cend(scores),
-                                    0ull, [](auto const sum, auto const e){ return sum + e; });
-
-       return static_cast<double>(total) / scores.size();
-    }
-
-    void sort_final_vec(std::vector<Player> players_ready)
-    {
-        std::sort(players_ready.begin(), players_ready.end(),
-                  [](Player const &a, Player const &b) { return a.final_result > b.final_result; });
-    }
-
-    std::string get_name(std::string name)
-    {
-        return name;
-    }
-
-//    std::string get_results(std::vector<int> scores)
-//    {
-//        return scores;
-//    }
-
-    ~Player(){};
-
-    friend std::ostream& operator<<(std::ostream& os, const Player& pl);
-//    friend std::sort(players_ready.begin(), players_ready.end(), [](){});
-
-private:
-    std::string name;
-    std::vector<int> scores;
-    std::vector<Player> players_ready;
-    double final_result;
-};
-
-std::ostream& operator<<(std::ostream& os, const Player& pl)
-{
-    os << pl.name << ' ';
-    return os;
+double convertToPercentage(int percentage) {
+  return static_cast<double>(percentage / 100.0);
 }
 
-//bool operator <(const Player& rhs) {
-//    return age < rhs.age;
-//}
+std::ostream &operator<<(std::ostream &os, const Player &pl) {
+  os << pl.name_ << ' ';
+  return os;
+}
 
-//template <class T>
-//std::ostream & operator << (std::ostream& os, const std::vector<T>& v)
-//{
-//    for (unsigned int i=0; i < v.size() ; i++)
-//    {
-//        if (i > 0)
-//            os << ',';
-//        os << v[i];
-//    }
+template <typename T> void printVectors(std::vector<T> const &v) {
+  for (auto &i : v)
+    std::cout << i << ' ';
 
-//    return os;
-//}
+  std::cout << std::endl;
+}
 
-template<typename T>
-void print_new_vectors(std::vector<T> const &v)
-{
-    for (auto &i: v)
-        std::cout << i << ' ';
+template <typename T>
+void splitOriginalVector(int nGroups, int nMembers, std::vector<T> &results) {
+  std::vector<Player> newVectors[nGroups];
+
+  for (int i = 0; i < nGroups; ++i) {
+    auto begin = std::next(results.cbegin(), i * nMembers);
+    auto end = std::next(results.cbegin(), i * nMembers + nMembers);
+
+    newVectors[i].resize(nMembers);
+    std::copy(begin, end, newVectors[i].begin());
+  }
+
+  for (int i = 0; i < nGroups; ++i) {
+    std::cout << "Team " << i + 1 << ": ";
+    printVectors(newVectors[i]);
+  }
+}
+
+int main() {
+  int nPeoples = 0, nGroups = 0, nMembers = 0, nScores = 0, percentage = 0;
+
+  std::vector<int> results = {}, scores = {};
+  std::vector<Player> players, playersReady;
+  std::string name = "", nickName = "";
+
+  std::cout << "Enter a number - the number of participants: ";
+  std::cin >> nPeoples;
+  std::cout << "Enter a number - the number of groups: ";
+  std::cin >> nGroups;
+  std::cout << "Enter a number - the percentage: ";
+  std::cin >> percentage;
+  std::cout << "Enter a number - the number of scores: ";
+  std::cin >> nScores;
+
+  std::cout << std::endl;
+  nMembers = nPeoples / nGroups;
+  double newPercentage = convertToPercentage(percentage);
+
+  for (int i = 0; i < nPeoples; ++i) {
+    getRandomNumbers(nScores, scores);
+    nickName = getRandomName(name);
+    Player player(nickName, scores);
+    players.push_back(player);
+    std::cout << '#' << i + 1 << ' ' << player;
+
+    for (auto const &sc : scores)
+      std::cout << sc << ' ';
 
     std::cout << std::endl;
-}
 
-void split_original_and_print_vec(int num_of_groups,
-                        int num_of_team_members, std::vector<Player>& results)
-{
-    std::vector<Player> new_vec[num_of_groups];
+    auto finalResult = player.computeTruncatedMean(scores, newPercentage);
+    std::cout << "Final result: " << finalResult << std::endl;
 
-    for (int i = 0; i < num_of_groups; ++i)
-    {
-        auto start_itr = std::next(results.cbegin(), i * num_of_team_members);
-        auto end_itr = std::next(results.cbegin(), i * num_of_team_members + num_of_team_members);
+    Player playerReady(nickName, finalResult);
+    playersReady.push_back(playerReady);
 
-        new_vec[i].resize(num_of_team_members);
-        std::copy(start_itr, end_itr, new_vec[i].begin());
-    }
-
-    for (int i = 0; i < num_of_groups; ++i)
-    {
-        std::cout << "Team " << i + 1 << ": ";
-        print_new_vectors(new_vec[i]);
-    }
-}
-
-int main()
-{
-    int num_of_peoples = 0, num_of_groups = 0,
-            num_of_team_members = 0, num_of_scores = 0, percentage = 0;
-
-    std::vector<int> results = {}, scores = {};
-    std::vector<Player> players, players_ready;
-    std::string name;
-
-    std::string names[30] = {
-        "Anatoliy", "Katya",   "Masha",     "Eva",      "Zema",  "Slavik",    "Margo",  "Yri",      "Vladimir", "Evilina",
-        "Alesha",   "Vasiliy", "Dima",      "Ruslan",   "Oleg",  "Mikhail",   "Igor",   "Ivan",     "Gleb",     "Denis",
-        "Alina",    "Alisa",   "Anastasia", "Viktoria", "Darya", "Ekaterina", "Kamila", "Kristina", "Ksenia",   "Natalya",
-    };
-
-    std::cout << "Enter a number - the number of participants: ";
-    std::cin >> num_of_peoples;
-    std::cout << "Enter a number - the number of groups: ";
-    std::cin >> num_of_groups;
-
-    std::cout << "Enter a number - the percentage: ";
-    std::cin >> percentage;
-    std::cout << "Enter a number - the number of scores: ";
-    std::cin >> num_of_scores;
-
+    scores.clear();
     std::cout << std::endl;
-    num_of_team_members = num_of_peoples / num_of_groups;
-    double new_percentage = to_percentage(percentage);
+  }
 
-    for (int i = 0; i < num_of_peoples; ++i)
-    {
-        generate_random_numbers(num_of_scores, scores);
-        name = names[rand() % 30];
-        Player player(name, scores);
-        players.push_back(player);
-        std::cout << '#' << i + 1 << ' ' << player;
+  //Нарушена инкапсуляция
+  std::sort(playersReady.begin(), playersReady.end(),
+            [](Player const &a, Player const &b) {
+              return a.finalResult_ < b.finalResult_;
+            });
 
-        for (auto const& sc : scores)
-            std::cout << sc << ' ';
+  splitOriginalVector(nGroups, nMembers, playersReady);
 
-        std::cout << std::endl;
-
-        auto final_result = player.truncated_mean(scores, new_percentage);
-        std::cout << "Final result: " << final_result << std::endl;
-
-        Player player_ready(name, final_result);
-        players_ready.push_back(player_ready);
-        player_ready.sort_final_vec(players_ready);
-
-        scores.clear();
-        std::cout << std::endl;
-    }
-
-    split_original_and_print_vec(num_of_groups, num_of_team_members, players_ready);
-
-    return 0;
+  return 0;
 }

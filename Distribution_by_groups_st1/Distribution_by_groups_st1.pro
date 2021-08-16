@@ -8,7 +8,8 @@ CONFIG -= app_bundle
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-        main.cpp
+        main.cpp \
+        player.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -25,3 +26,6 @@ PRE_TARGETDEPS += .beforebuild
 before_build.target = .beforebuild
 before_build.depends = FORCE
 before_build.commands = chcp 1251
+
+HEADERS += \
+    player.h
